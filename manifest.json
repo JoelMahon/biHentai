@@ -1,0 +1,48 @@
+{
+	// Required
+	"name": "biHentai",
+	"version": "1.20.5.23",
+	"author": "Joel Mahon",
+	"manifest_version": 2,
+	
+	// Recommended
+	"description": "Allows you to switch between languages of a given hentai on nHentai.",
+	"icons":
+	{
+		"256": "biHentai_icon.png"
+	},
+	
+	// Type of action: Browser, Page, or none
+	"page_action":
+	{
+		"default_title": "Toggle the on page widget",
+		"default_popup": "popup.html",
+		"default_icon":
+		{
+			"256": "biHentai_icon.png"
+		}
+	},
+	
+	"options_page" : "options.html",
+	
+	"background":
+	{
+		"scripts": ["background.js"]
+	},
+	
+	"content_scripts":
+	[
+		{
+			"matches": ["https://nhentai.net/g/*/*/*", "http://nhentai.net/g/*/*/*"],
+			"js": ["content.js"],
+			"css": ["content.css"]
+		}
+	],
+	
+	//Intent of app, what it accesses from the user
+	"permissions":
+	[
+		"https://nhentai.net/",
+		"http://nhentai.net/"
+	]
+}

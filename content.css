@@ -1,0 +1,7 @@
+#biHDiv
+{
+	position:fixed;	left:0%; bottom: 15%; /*Position*/
+	background-color: #303030; color: white; padding: 0.5em 0.5em 0.5em 1em; text-decoration: none;text-transform: uppercase; border-radius: 0 1em 1em 0; /*Button*/
+	writing-mode: vertical-lr; text-orientation: upright; /*Vertical text*/
+	font-size: 20px; opacity: 0.5;
+}
