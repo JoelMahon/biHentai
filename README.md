@@ -32,5 +32,5 @@ biHentai in it's current form is intuitive to use I am proud to say, helps when 
 4. A default query is provided that should often work, but may require manual tweaking to get right.
 5. If your query worked then the image should update.
 6. Sometimes the pages are out of sync, you can press the -/+ symbols to change the "offset" of the other work until the pages match up.
-6. Navigate using my widget. I'm not a control freak, I just couldn't get my code to integrate nicely with their javascript...
-7. Toggle as you wish!
+7. Navigate using my widget. I'm not a control freak, I just couldn't get my code to integrate nicely with their javascript...
+8. Toggle as you wish!
