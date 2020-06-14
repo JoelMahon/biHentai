@@ -1,7 +1,18 @@
+#biHDiv, button
+{
+	background-color: #303030; color: white; /*Metro Feel*/
+	font-size: 20px;
+	opacity: 0.5;
+}
+
+button
+{
+	border-radius: 1em;
+	padding: 0.5em;
+}
+
 #biHDiv
 {
-	position:fixed;	left:0%; bottom: 15%; /*Position*/
-	background-color: #303030; color: white; padding: 0.5em 0.5em 0.5em 1em; text-decoration: none;text-transform: uppercase; border-radius: 0 1em 1em 0; /*Button*/
-	writing-mode: vertical-lr; text-orientation: upright; /*Vertical text*/
-	font-size: 20px; opacity: 0.5;
+	padding: 0.25em 0.25em 0.25em 1em; text-decoration: none; text-transform: uppercase; border-radius: 0 1em 1em 0;
+	position:fixed;	left:0%; bottom: 20%;
 }

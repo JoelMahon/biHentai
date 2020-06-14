@@ -1,32 +1,37 @@
 function httpGetAsync(theUrl, callback)
 {
-    var xmlHttp = new XMLHttpRequest();
+	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.responseType = "document";
-    xmlHttp.onreadystatechange = function()
+	xmlHttp.onreadystatechange = function()
 	{ 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        	if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
 		{
-            callback(xmlHttp.response);
+			callback(xmlHttp.response);
 		}
-    }
-    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
+	}
+	xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+	xmlHttp.send(null);
+}
+
+function getTagText(doc, tagTypeIndex, tagIndex)
+{
+	// Text is always in a text node, hence the last childNodes[0]
+	return doc.getElementById("tags").children[tagTypeIndex].children[0].children[tagIndex].children[0].childNodes[0].nodeValue;
 }
 
 function getAuthorFromGallery(doc)
 {
-	// Text is always in a text node, hence the last childNodes[0]
-	return doc.getElementById("tags").children[3].children[0].children[0].childNodes[0].nodeValue;
+	return getTagText(doc, 3, 0);
 }
 
 function getLanguageFromGallery(doc)
 {
 	// Text is always in a text node, hence the last childNodes[0]
-	var first_lang = doc.getElementById("tags").children[5].children[0].children[0].childNodes[0].nodeValue;
+	var first_lang = getTagText(doc, 5, 0);
 	// don't return "translated"
 	if (first_lang.includes("translated"))
 	{
-		return doc.getElementById("tags").children[5].children[0].children[1].childNodes[0].nodeValue;
+		return getTagText(doc, 5, 1);
 	}
 	return first_lang;
 }
@@ -57,6 +62,13 @@ function getHentaiIdFromUrl(url)
 	return "";
 }
 
+function getTargetPageNumber()
+{
+	// Use +s before strings to convert them to numeric
+	// Text is always in a text node, hence the last childNodes[0]
+	return +getCurrentPageNumber() + +pShift;
+}
+
 function getCurrentPageNumber()
 {
 	// Text is always in a text node, hence the last childNodes[0]
@@ -65,22 +77,22 @@ function getCurrentPageNumber()
 
 function setDefaultQueryFromGallery(doc)
 {
-	var curAuthor = getAuthorFromGallery(doc); // includes a space
+	var curAuthor = getAuthorFromGallery(doc);
 	
-	var curLang = getLanguageFromGallery(doc); // includes a space
+	var curLang = getLanguageFromGallery(doc);
 	var tarLang = "";
 	if (curLang.includes("english"))
 	{
-		tarLang = "japanese " // includes a space
+		tarLang = "japanese"
 	}
 	else
 	{
-		tarLang = "english " // includes a space
+		tarLang = "english"
 	}
 	
 	var curTitle = getTitleFromGallery(doc);
 	
-	defaultQuery = curAuthor + tarLang + curTitle;
+	defaultQuery = curAuthor + " " + tarLang + " " + curTitle;
 }
 
 function replaceImgWithImg(doc)
@@ -105,35 +117,52 @@ var getParams = function (url)
 	return params;
 };
 
+function setImageToSwapped()
+{
+	httpGetAsync("https://nhentai.net/g/"+gId+"/"+getTargetPageNumber()+"/", replaceImgWithImg);
+	onOriginal = 0;
+	
+	updatePagination();
+}
+
+function setImageToOriginal()
+{
+	httpGetAsync("https://nhentai.net/g/"+curId+"/"+getCurrentPageNumber()+"/", replaceImgWithImg);
+	onOriginal = 1;
+	
+	updatePagination();
+}
+
 function swapImageByIdOrPrompt()
 {
 	if (onOriginal)
 	{
-		if (!pId)
+		if (!gId)
 		{
 			var query = prompt("Provide a search query", defaultQuery);
-			httpGetAsync("https://nhentai.net/search/?q="+query+"&sort=popular", swapImageByQuery);
+			if (!query) return;
+			httpGetAsync("https://nhentai.net/search/?q="+query+"&sort=popular", swapImageByQuery); // Finds ID then recursively calls swapImageByIdOrPrompt();
 		}
 		else // if we already have the id, use it
 		{
-			httpGetAsync("https://nhentai.net/g/"+pId+"/"+getCurrentPageNumber()+"/", replaceImgWithImg);
-			onOriginal = false;
-			
-			a_next.setAttribute("href", next.href+"?pId="+pId);
-			a_prev.setAttribute("href", prev.href+"?pId="+pId);
+			setImageToSwapped();
 		}
 	}
 	else // Reset To Original Image
 	{
-		httpGetAsync("https://nhentai.net/g/"+curId+"/"+getCurrentPageNumber()+"/", replaceImgWithImg);
-		onOriginal = true;
+		setImageToOriginal();
 	}
 }
 
 function swapImageByQuery(doc)
 {
 	var a = doc.getElementsByClassName("cover")[0];
-	pId = getHentaiIdFromUrl(a.href);
+	if (!a)
+	{
+		alert("No galleries found", 500);
+		return;
+	}
+	gId = getHentaiIdFromUrl(a.href);
 	swapImageByIdOrPrompt();
 }
 
@@ -143,48 +172,87 @@ function setDefaultQuery()
 	httpGetAsync("https://nhentai.net/g/"+curHentaiId, setDefaultQueryFromGallery);
 }
 
+function setButtonLink(butt, url)
+{
+	butt.setAttribute("onclick", "window.location.href='"+url+"';");
+}
+
+function updatePagination()
+{
+	var pShiftUrl = "?ps="+pShift;
+	var orUrl = "&or="+onOriginal;
+	if (gId)
+	{
+		var gIdUrl = "&gId="+gId;
+		setButtonLink(b_next, next.href+pShiftUrl+orUrl+gIdUrl);
+		setButtonLink(b_prev, prev.href+pShiftUrl+orUrl+gIdUrl);
+	}
+	else
+	{
+		setButtonLink(b_next, next.href+pShiftUrl+orUrl);
+		setButtonLink(b_prev, prev.href+pShiftUrl+orUrl);
+	}
+}
+
 // Layout/Visuals
 
 var div=document.createElement("div");
-div.id="biHDiv"
+div.id="biHDiv";
 
-var a_next=document.createElement("a");
+var b_next=document.createElement("button");
+var div_trans=document.createElement("div");
+var b_dec_shift=document.createElement("button");
+b_dec_shift.className="biHButt";
 var b_trans=document.createElement("button");
-var a_prev=document.createElement("a");
+b_trans.className="biHButt";
+var b_inc_shift=document.createElement("button");
+b_inc_shift.className="biHButt";
+var b_prev=document.createElement("button");
 
-a_next.innerHTML="Next";
+b_next.innerHTML="Next";
+b_dec_shift.innerHTML="-";
 b_trans.innerHTML="あ";
-a_prev.innerHTML="Prev";
+b_inc_shift.innerHTML="+";
+b_prev.innerHTML="Prev";
 
-div.appendChild(a_next);
+div.appendChild(b_next);
+div.appendChild(document.createElement("br"));
+div.appendChild(b_dec_shift);
 div.appendChild(b_trans);
-div.appendChild(a_prev);
+div.appendChild(b_inc_shift);
+div.appendChild(document.createElement("br"));
+div.appendChild(div_trans);
+div.appendChild(b_prev);
 
-var pageCont=document.getElementById("page-container");
+var pageCont=document.getElementById("content");
 var imgCont=document.getElementById("image-container");
 pageCont.insertBefore(div, imgCont);
 
 // Functionality
 
-var params = getParams(window.location.href);
-var pId = params["pId"]; // Pair ID: TODO STORE IN BACKGROUND?
-var defaultQuery = ""
-
 var next=document.getElementsByClassName("next")[0];
 var prev=document.getElementsByClassName("previous")[0];
 
-if (pId)
+var curId = getHentaiIdFromUrl(window.location.href);
+
+var params = getParams(window.location.href);
+var pShift = params["ps"] || 0; // Page Shift
+var onOriginal = params["or"] === "0" ? 0 : 1; // On original language, converted to numeric
+var gId = params["gId"]; // Gallery ID
+
+var defaultQuery = "";
+if (!gId)
 {
-	a_next.setAttribute("href", next.href+"?pId="+pId);
-	a_prev.setAttribute("href", prev.href+"?pId="+pId);
+	defaultQuery = setDefaultQuery();
 }
-else
+else if (!onOriginal)
 {
-	a_next.setAttribute("href", next.href);
-	a_prev.setAttribute("href", prev.href);
-	setDefaultQuery();
+	onOriginal = 1;
+	swapImageByIdOrPrompt();
 }
 
-var curId = getHentaiIdFromUrl(window.location.href);
-var onOriginal = true;
 b_trans.onclick = swapImageByIdOrPrompt;
+b_dec_shift.onclick = function() { pShift--; onOriginal = 1; swapImageByIdOrPrompt(); }
+b_inc_shift.onclick = function() { pShift++; onOriginal = 1; swapImageByIdOrPrompt(); }
+
+updatePagination();
