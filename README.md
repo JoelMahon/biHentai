@@ -30,6 +30,7 @@ biHentai in it's current form is intuitive to use I am proud to say, helps when 
 2. Click the あ on the new widget in the bottom left of the page to toggle languages.
 3. The first time you do it you will be prompted to provide the query to find an alternate version of the hentai.
 4. A default query is provided that should often work, but may require manual tweaking to get right.
-5. If your query worked then the image should update, sometimes the pages are out of sync, I aim to provided a solution to this next.
-6. Navigate using my widget, I'm not a control freak, I just couldn't get my code to integrate nicely with their javascript...
+5. If your query worked then the image should update.
+6. Sometimes the pages are out of sync, you can press the -/+ symbols to change the "offset" of the other work until the pages match up.
+6. Navigate using my widget. I'm not a control freak, I just couldn't get my code to integrate nicely with their javascript...
 7. Toggle as you wish!
